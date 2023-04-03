@@ -64,4 +64,19 @@ class Order
 
         return $this;
     }
+
+    public function addProduct(Product $product): void
+    {
+        $this->products[] = $product;
+    }
+
+    public function removeProduct(Product $productToRemove): void
+    {
+        foreach ($this->products as $key => $product) {
+            if ($product === $productToRemove) {
+                unset($this->products[$key]);
+                break;
+            }
+        }
+    }
 }
