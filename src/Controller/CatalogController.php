@@ -4,38 +4,37 @@ namespace App\Controller;
 
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
-use function MongoDB\BSON\toJSON;
 
 class CatalogController extends AbstractController {
-    public function getAllProducts(){
-
+    public function getAllProducts(): JsonResponse{
+        return new JsonResponse("");
     }
 
-    public function getProduct(int $productId){
-
+    public function getProduct(int $productId): JsonResponse{
+        return new JsonResponse("");
     }
 
-    public function addProduct(){
-
+    public function addProduct(): JsonResponse{
+        return new JsonResponse("");
     }
 
-    public function modifyAndDeleteProduct(int $productId){
-
+    public function modifyAndDeleteProduct(int $productId): JsonResponse{
+        return new JsonResponse("");
     }
 
-    public function addProductToShoppingCart(int $productId){
-
+    public function addProductToShoppingCart(int $productId): JsonResponse{
+        return new JsonResponse("");
     }
 
-    public function removeProductFromShoppingCart(int $productId){
-
+    public function removeProductFromShoppingCart(int $productId): JsonResponse{
+        return new JsonResponse("");
     }
 
-    public function getStateOfShoppingCart(){
-
+    public function getStateOfShoppingCart(): JsonResponse{
+        return new JsonResponse("");
     }
 
-    public function validateShoppingCart(){
-
+    public function validateShoppingCart(): JsonResponse{
+        return new JsonResponse("");
     }
 }
