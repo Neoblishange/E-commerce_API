@@ -3,3 +3,73 @@ controllers:
         path: ../src/Controller/
         namespace: App\Controller
     type: attribute
+
+register:
+    path: /api/register
+    controller: App\Controller\UsersController::register
+    methods: POST
+
+login:
+    path: /api/login
+    controller: App\Controller\UsersController::login
+    methods: POST
+
+updateUser:
+    path: /api/users
+    controller: App\Controller\UsersController::updateUser
+    methods: POST
+
+displayUser:
+    path: /api/users
+    controller: App\Controller\UsersController::displayUser
+    methods: GET
+
+getAllProducts:
+    path: /api/products
+    controller: App\Controller\CatalogController::getAllProducts
+    methods: GET
+
+getProduct:
+    path: /api/products/{productId}
+    controller: App\Controller\CatalogController::getProduct
+    methods: GET
+
+addProduct:
+    path: /api/products
+    controller: App\Controller\CatalogController::addProduct
+    methods: POST
+
+modifyAndDeleteProduct:
+    path: /api/products/{productId}
+    controller: App\Controller\CatalogController::modifyAndDeleteProduct
+    methods: DELETE
+
+addProductToShoppingCart:
+    path: /api/carts/{productId}
+    controller: App\Controller\CatalogController::addProductToShoppingCart
+    methods: POST
+
+removeProductFromShoppingCart:
+    path: /api/carts/{productId}
+    controller: App\Controller\CatalogController::removeProductFromShoppingCart
+    methods: DELETE
+
+getStateOfShoppingCart:
+    path: /api/carts
+    controller: App\Controller\CatalogController::getStateOfShoppingCart
+    methods: GET
+
+validateShoppingCart:
+    path: /api/carts/validate
+    controller: App\Controller\CatalogController::validateShoppingCart
+    methods: POST
+
+getAllOrdersOfUser:
+    path: /api/orders
+    controller: App\Controller\OrdersController::getAllOrdersOfUser
+    methods: GET
+
+getOrder:
+    path: /api/orders/{orderId}
+    controller: App\Controller\OrdersController::getOrder
+    methods: GET
