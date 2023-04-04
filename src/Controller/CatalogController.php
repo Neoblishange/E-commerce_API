@@ -164,7 +164,7 @@ class CatalogController extends AbstractController {
         $currentApiToken = $session->get('apiToken');
         $apiToken = $this->apiTokenRepository->findOneBy(['token' => $currentApiToken]);
         if($apiToken){
-
+            // NOT DONE YET
         }
         return new JsonResponse("CODE 400 - Not authenticated", Response::HTTP_BAD_REQUEST, [], true);
     }
