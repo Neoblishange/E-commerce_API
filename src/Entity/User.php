@@ -103,7 +103,16 @@ class User
         return $this;
     }
 
-    public function toArray(): array {
-        return array($this->login, $this->password, $this->email, $this->firstname, $this->lastname);
+    public function toJson(): JsonResponse
+    {
+        $data = [
+            'id' => $this->getId(),
+            'login' => $this->getLogin(),
+            'password' => $this->getPassword(),
+            'email' => $this->getEmail(),
+            'firstname' => $this->getFirstname(),
+            'lastname' => $this->getLastname(),
+        ];
+        return new JsonResponse($data);
     }
 }

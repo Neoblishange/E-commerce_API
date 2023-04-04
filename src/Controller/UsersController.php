@@ -11,6 +11,7 @@ use Exception;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Security\Csrf\TokenGenerator\TokenGeneratorInterface;
 
 
@@ -42,10 +43,10 @@ class UsersController extends AbstractController {
         try {
             $this->userRepository->save($user, true);
             $this->apiTokenRepository->save($apiToken, true);
-            return new JsonResponse("User added"); //code 200 OK
+            return new JsonResponse("CODE 201 - New user registered", Response::HTTP_CREATED, [], true);
         }
         catch (Exception $exception) {
-            return new JsonResponse("User exists"); // need error code
+            return new JsonResponse("ERROR 401 - User exists", Response::HTTP_UNAUTHORIZED, [], true);
         }
     }
 
@@ -58,16 +59,16 @@ class UsersController extends AbstractController {
         if($session->has('api_token')){
             $apiToken = $this->apiTokenRepository->findOneBy(['token' => $session->get('api_token')]);
             if($apiToken){
-                return new JsonResponse("Authenticated with token"); //code 200 OK
+                return new JsonResponse("CODE 200 - Authenticated with token", Response::HTTP_OK, [], true);
             }
         }
         if (!$user) {
-            return new JsonResponse("Bad login"); // need error code
+            return new JsonResponse("ERROR 401 - Bad logins", Response::HTTP_UNAUTHORIZED, [], true);
         }
         else {
             $isValid = $user->getPassword() == $data['password'];
             if(!$isValid) {
-                return new JsonResponse("Bad password"); // need error code
+                return new JsonResponse("ERROR 401 - Bad logins", Response::HTTP_UNAUTHORIZED, [], true);
             }
             else {
                 $newToken = $this->tokenGenerator->generateToken();
@@ -79,7 +80,7 @@ class UsersController extends AbstractController {
                 else {
                     $session->set('api_token', $apiToken->getToken());
                 }
-                return new JsonResponse("Authenticated with login"); //need code 200 OK
+                return new JsonResponse("CODE 200 - Authenticated with login", Response::HTTP_OK, [], true);
             }
         }
     }
@@ -99,14 +100,14 @@ class UsersController extends AbstractController {
                 $currentUser->setLastname($data["lastname"]);
                 try {
                     $this->userRepository->save($currentUser, true);
-                    return new JsonResponse("Update user success"); //code 200 OK
+                    return new JsonResponse("CODE 204 - Update user success", Response::HTTP_NO_CONTENT, [], true);
                 }
                 catch (Exception $exception) {
-                    return new JsonResponse("Update user failed"); // need error code
+                    return new JsonResponse("ERROR 400 - Update user failed", Response::HTTP_BAD_REQUEST, [], true);
                 }
             }
         }
-        return new JsonResponse("You are not connected");
+        return new JsonResponse("ERROR 401 - You are not connected", Response::HTTP_UNAUTHORIZED, [], true);
     }
 
     public function displayUser(Request $request): JsonResponse
@@ -114,7 +115,7 @@ class UsersController extends AbstractController {
         $session = $request->getSession();
         $apiToken = $this->apiTokenRepository->findOneBy(['token' => $session->get('api_token')]);
         $user = $this->userRepository->findOneBy(['id' => $apiToken->getUserId()]);
-        return new JsonResponse($user instanceof User ? $user->toArray() : []);
+        return new JsonResponse($user instanceof User ? $user->toJson() : [], 200, [], true);
     }
 
     public function disconnect(Request $request): JsonResponse
@@ -126,6 +127,6 @@ class UsersController extends AbstractController {
             $this->apiTokenRepository->remove($apiToken, true);
         }
         $session->clear();
-        return new JsonResponse("You have been disconnected");
+        return new JsonResponse("CODE 204 - You have been disconnected", Response::HTTP_NO_CONTENT, [], true);
     }
 }
