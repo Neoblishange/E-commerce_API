@@ -5,6 +5,7 @@ namespace App\Entity;
 use App\Repository\OrderRepository;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\HttpFoundation\JsonResponse;
 
 #[ORM\Entity(repositoryClass: OrderRepository::class)]
 #[ORM\Table(name: '`order`')]
@@ -78,5 +79,16 @@ class Order
                 break;
             }
         }
+    }
+
+    public function toJson(): JsonResponse
+    {
+        $data = [
+            'id' => $this->getId(),
+            'totalPrice' => $this->getTotalPrice(),
+            'creationDate' => $this->getCreationDate(),
+            'products' => $this->getProducts(),
+        ];
+        return new JsonResponse($data);
     }
 }

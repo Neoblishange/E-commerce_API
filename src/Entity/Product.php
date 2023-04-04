@@ -4,6 +4,7 @@ namespace App\Entity;
 
 use App\Repository\ProductRepository;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\HttpFoundation\JsonResponse;
 
 #[ORM\Entity(repositoryClass: ProductRepository::class)]
 class Product
@@ -76,5 +77,17 @@ class Product
         $this->price = $price;
 
         return $this;
+    }
+
+    public function toJson(): JsonResponse
+    {
+        $data = [
+            'id' => $this->getId(),
+            'name' => $this->getName(),
+            'description' => $this->getDescription(),
+            'photo' => $this->getPhoto(),
+            'price' => $this->getPrice(),
+        ];
+        return new JsonResponse($data);
     }
 }
