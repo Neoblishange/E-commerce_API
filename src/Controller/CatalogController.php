@@ -5,6 +5,7 @@ namespace App\Controller;
 use App\Entity\Product;
 use App\Repository\ApiTokenRepository;
 use App\Repository\ProductRepository;
+use App\Repository\UserRepository;
 use Exception;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -13,11 +14,14 @@ use Symfony\Component\HttpFoundation\Response;
 
 class CatalogController extends AbstractController {
     private ProductRepository $productRepository;
+    private UserRepository $userRepository;
     private ApiTokenRepository $apiTokenRepository;
 
-    public function __construct(ProductRepository $productRepository, ApiTokenRepository $apiTokenRepository)
+    public function __construct(
+        ProductRepository $productRepository, UserRepository $userRepository, ApiTokenRepository $apiTokenRepository)
     {
         $this->productRepository = $productRepository;
+        $this->userRepository = $userRepository;
         $this->apiTokenRepository = $apiTokenRepository;
     }
 
@@ -68,7 +72,31 @@ class CatalogController extends AbstractController {
         $currentApiToken = $session->get('apiToken');
         $apiToken = $this->apiTokenRepository->findOneBy(['token' => $currentApiToken]);
         if($apiToken){
-
+            try {
+                $product = $this->productRepository->findOneBy(['id' => $productId]);
+                if($product){
+                    $user = $this->userRepository->findOneBy(['id' => $apiToken->getUserId()]);
+                    if($user === $product->getUser()){
+                        if($request->getMethod() == Request::METHOD_POST) {
+                            $data = json_decode($request->getContent(), true);
+                            $product->setName($data["name"]);
+                            $product->setDescription($data["description"]);
+                            $product->setPhoto($data["photo"]);
+                            $product->setPrice($data["price"]);
+                            $this->productRepository->save($product, true);
+                            return new JsonResponse("CODE 200 - Modify product succeed", Response::HTTP_OK, [], true);
+                        }
+                        elseif ($request->getMethod() == Request::METHOD_DELETE) {
+                            $this->productRepository->remove($product, true);
+                            return new JsonResponse("CODE 200 - Delete product succeed", Response::HTTP_OK, [], true);
+                        }
+                    }
+                }
+                return new JsonResponse("CODE 400 - Modify/Delete product failed", Response::HTTP_BAD_REQUEST, [], true);
+            }
+            catch (Exception $exception){
+                return new JsonResponse("CODE 400 - Modify/Delete product failed", Response::HTTP_BAD_REQUEST, [], true);
+            }
         }
         return new JsonResponse("CODE 400 - Not authenticated", Response::HTTP_BAD_REQUEST, [], true);
     }

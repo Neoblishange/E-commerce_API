@@ -44,7 +44,12 @@ addProduct:
     controller: App\Controller\CatalogController::addProduct
     methods: POST
 
-modifyAndDeleteProduct:
+modifyProduct:
+    path: /api/products/{productId}
+    controller: App\Controller\CatalogController::modifyAndDeleteProduct
+    methods: POST
+
+deleteProduct:
     path: /api/products/{productId}
     controller: App\Controller\CatalogController::modifyAndDeleteProduct
     methods: DELETE
