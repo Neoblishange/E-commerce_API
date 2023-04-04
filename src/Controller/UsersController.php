@@ -39,7 +39,7 @@ class UsersController extends AbstractController {
         $token = $this->tokenGenerator->generateToken();
         $apiToken = new ApiToken($user, $token);
         $session = $request->getSession();
-        $session->set('api_token', $token);
+        $session->set('apiToken', $token);
         try {
             $this->userRepository->save($user, true);
             $this->apiTokenRepository->save($apiToken, true);
@@ -56,8 +56,8 @@ class UsersController extends AbstractController {
         $user = $this->userRepository->findOneBy(['email' => $data['email']]);
         $session = $request->getSession();
 
-        if($session->has('api_token')){
-            $apiToken = $this->apiTokenRepository->findOneBy(['token' => $session->get('api_token')]);
+        if($session->has('apiToken')){
+            $apiToken = $this->apiTokenRepository->findOneBy(['token' => $session->get('apiToken')]);
             if($apiToken){
                 return new JsonResponse("CODE 200 - Authenticated with token", Response::HTTP_OK, [], true);
             }
@@ -78,7 +78,7 @@ class UsersController extends AbstractController {
                     $this->apiTokenRepository->save($apiToken, true);
                 }
                 else {
-                    $session->set('api_token', $apiToken->getToken());
+                    $session->set('apiToken', $apiToken->getToken());
                 }
                 return new JsonResponse("CODE 200 - Authenticated with login", Response::HTTP_OK, [], true);
             }
@@ -88,8 +88,8 @@ class UsersController extends AbstractController {
     public function updateUser(Request $request, EntityManagerInterface $entityManager): JsonResponse
     {
         $session = $request->getSession();
-        $apiToken = $this->apiTokenRepository->findOneBy(['token' => $session->get('api_token')]);
-        if($session->has('api_token') && $apiToken){
+        $apiToken = $this->apiTokenRepository->findOneBy(['token' => $session->get('apiToken')]);
+        if($session->has('apiToken') && $apiToken){
             $data = json_decode($request->getContent(), true);
             $currentUser = $this->userRepository->findOneBy(['id' => $apiToken->getUserId()]);
             if($currentUser){
@@ -113,7 +113,7 @@ class UsersController extends AbstractController {
     public function displayUser(Request $request): JsonResponse
     {
         $session = $request->getSession();
-        $apiToken = $this->apiTokenRepository->findOneBy(['token' => $session->get('api_token')]);
+        $apiToken = $this->apiTokenRepository->findOneBy(['token' => $session->get('apiToken')]);
         $user = $this->userRepository->findOneBy(['id' => $apiToken->getUserId()]);
         return new JsonResponse($user instanceof User ? $user->toJson() : [], 200, [], true);
     }
@@ -121,7 +121,7 @@ class UsersController extends AbstractController {
     public function disconnect(Request $request): JsonResponse
     {
         $session = $request->getSession();
-        $token = $session->get('api_token');
+        $token = $session->get('apiToken');
         $apiToken = $this->apiTokenRepository->findOneBy(['token' => $token]);
         if($apiToken) {
             $this->apiTokenRepository->remove($apiToken, true);
