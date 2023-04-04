@@ -58,6 +58,8 @@ addProductToShoppingCart:
     path: /api/carts/{productId}
     controller: App\Controller\CatalogController::addProductToShoppingCart
     methods: POST
+    requirements:
+        productId: \d+
 
 removeProductFromShoppingCart:
     path: /api/carts/{productId}
