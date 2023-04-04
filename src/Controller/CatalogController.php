@@ -44,14 +44,14 @@ class CatalogController extends AbstractController {
         $currentApiToken = $session->get('apiToken');
         $apiToken = $this->apiTokenRepository->findOneBy(['token' => $currentApiToken]);
         if($apiToken){
-            $data = json_decode($request->getContent(), true);
-            $product = new Product(
-                $data["name"], $data["description"],
-                $data["photo"], $data["price"]
-            );
-            $user = $apiToken->getUserId();
-            $product->setUser($user);
             try {
+                $data = json_decode($request->getContent(), true);
+                $product = new Product(
+                    $data["name"], $data["description"],
+                    $data["photo"], $data["price"]
+                );
+                $user = $apiToken->getUserId();
+                $product->setUser($user);
                 $this->productRepository->save($product, true);
                 return new JsonResponse("CODE 200 - Product added", Response::HTTP_OK, [], true);
             }
@@ -59,7 +59,7 @@ class CatalogController extends AbstractController {
                 return new JsonResponse("CODE 400 - Add product failed", Response::HTTP_BAD_REQUEST, [], true);
             }
         }
-        return new JsonResponse("CODE 400 - Add product failed", Response::HTTP_BAD_REQUEST, [], true);
+        return new JsonResponse("CODE 400 - Not authenticated", Response::HTTP_BAD_REQUEST, [], true);
     }
 
     public function modifyAndDeleteProduct(Request $request, int $productId): JsonResponse
@@ -70,7 +70,7 @@ class CatalogController extends AbstractController {
         if($apiToken){
 
         }
-        return new JsonResponse("");
+        return new JsonResponse("CODE 400 - Not authenticated", Response::HTTP_BAD_REQUEST, [], true);
     }
 
     public function addProductToShoppingCart(Request $request, int $productId): JsonResponse
@@ -92,9 +92,11 @@ class CatalogController extends AbstractController {
                     $shoppingCart[$productId] = 1;
                 }
                 $session->set('shoppingCart', $shoppingCart);
+                return new JsonResponse("CODE 200 - Product added to cart", Response::HTTP_OK, [], true);
             }
+            return new JsonResponse("CODE 400 - Product doesn't exist", Response::HTTP_BAD_REQUEST, [], true);
         }
-        return new JsonResponse("CODE 200 - Product added to cart", Response::HTTP_OK, [], true);
+        return new JsonResponse("CODE 400 - Not authenticated", Response::HTTP_BAD_REQUEST, [], true);
     }
 
     public function removeProductFromShoppingCart(Request $request, int $productId): JsonResponse
@@ -107,11 +109,13 @@ class CatalogController extends AbstractController {
                 $shoppingCart = $session->has('shoppingCart') ? $session->get('shoppingCart') : [];
                 if(isset($shoppingCart[$productId])){
                     unset($shoppingCart[$productId]);
+                    $session->set('shoppingCart', $shoppingCart);
+                    return new JsonResponse("CODE 200 - Product removed from cart", Response::HTTP_OK, [], true);
                 }
-                $session->set('shoppingCart', $shoppingCart);
             }
+            return new JsonResponse("CODE 400 - Product doesn't exist", Response::HTTP_BAD_REQUEST, [], true);
         }
-        return new JsonResponse("CODE 200 - Product removed from cart", Response::HTTP_OK, [], true);
+        return new JsonResponse("CODE 400 - Not authenticated", Response::HTTP_BAD_REQUEST, [], true);
     }
 
     public function getStateOfShoppingCart(Request $request): JsonResponse
@@ -120,9 +124,10 @@ class CatalogController extends AbstractController {
         $currentApiToken = $session->get('apiToken');
         $apiToken = $this->apiTokenRepository->findOneBy(['token' => $currentApiToken]);
         if($apiToken){
-
+            $shoppingCart = $session->has('shoppingCart') ? $session->get('shoppingCart') : [];
+            return new JsonResponse(json_encode($shoppingCart), Response::HTTP_OK, [], true);
         }
-        return new JsonResponse("");
+        return new JsonResponse("CODE 400 - Not authenticated", Response::HTTP_BAD_REQUEST, [], true);
     }
 
     public function validateShoppingCart(Request $request): JsonResponse
@@ -133,6 +138,6 @@ class CatalogController extends AbstractController {
         if($apiToken){
 
         }
-        return new JsonResponse("");
+        return new JsonResponse("CODE 400 - Not authenticated", Response::HTTP_BAD_REQUEST, [], true);
     }
 }
