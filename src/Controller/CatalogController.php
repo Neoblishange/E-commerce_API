@@ -154,7 +154,7 @@ class CatalogController extends AbstractController {
         if($apiToken){
             $shoppingCart = $session->has('shoppingCart') ? $session->get('shoppingCart') : [];
             return new JsonResponse(json_encode($shoppingCart), Response::HTTP_OK, [], true);
-        }
+        } // VOIR AVEC NICO SI ON AFFICHE SEULEMENT IDs DES PRODUITS OU TOUT LE DESCRIPTIF DES PRODUITS
         return new JsonResponse("CODE 400 - Not authenticated", Response::HTTP_BAD_REQUEST, [], true);
     }
 
