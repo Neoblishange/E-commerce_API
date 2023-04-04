@@ -55,7 +55,6 @@ class UsersController extends AbstractController {
         $data = json_decode($request->getContent(), true);
         $user = $this->userRepository->findOneBy(['email' => $data['email']]);
         $session = $request->getSession();
-
         if($session->has('apiToken')){
             $apiToken = $this->apiTokenRepository->findOneBy(['token' => $session->get('apiToken')]);
             if($apiToken){
@@ -121,8 +120,7 @@ class UsersController extends AbstractController {
     public function disconnect(Request $request): JsonResponse
     {
         $session = $request->getSession();
-        $token = $session->get('apiToken');
-        $apiToken = $this->apiTokenRepository->findOneBy(['token' => $token]);
+        $apiToken = $this->apiTokenRepository->findOneBy(['token' => $session->get('apiToken')]);
         if($apiToken) {
             $this->apiTokenRepository->remove($apiToken, true);
         }
