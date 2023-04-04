@@ -56,35 +56,81 @@ class CatalogController extends AbstractController {
                 return new JsonResponse("CODE 200 - Product added", Response::HTTP_OK, [], true);
             }
             catch (Exception $exception) {
-                return new JsonResponse("CODE " . $exception->getCode() . " - Add product failed", $exception->getCode(), [], true);
+                return new JsonResponse("CODE 400 - Add product failed", Response::HTTP_BAD_REQUEST, [], true);
             }
+        }
+        return new JsonResponse("CODE 400 - Add product failed", Response::HTTP_BAD_REQUEST, [], true);
+    }
+
+    public function modifyAndDeleteProduct(Request $request, int $productId): JsonResponse
+    {
+        $session = $request->getSession();
+        $currentApiToken = $session->get('apiToken');
+        $apiToken = $this->apiTokenRepository->findOneBy(['token' => $currentApiToken]);
+        if($apiToken){
 
         }
-        return new JsonResponse("CODE 500 - Add product failed", Response::HTTP_INTERNAL_SERVER_ERROR, [], true);
-    }
-
-    public function modifyAndDeleteProduct(int $productId): JsonResponse
-    {
         return new JsonResponse("");
     }
 
-    public function addProductToShoppingCart(int $productId): JsonResponse
+    public function addProductToShoppingCart(Request $request, int $productId): JsonResponse
     {
+        $session = $request->getSession();
+        $currentApiToken = $session->get('apiToken');
+        $apiToken = $this->apiTokenRepository->findOneBy(['token' => $currentApiToken]);
+        if($apiToken){
+            if($this->productRepository->findOneBy(['id' => $productId])){
+                $shoppingCart = $session->has('shoppingCart') ? $session->get('shoppingCart') : [];
+                if(sizeof($shoppingCart) > 0) {
+                    foreach ($shoppingCart as $id => $quantity) {
+                        $id === $productId
+                            ? $shoppingCart[$productId] = $quantity + 1
+                            : $shoppingCart[$productId] = 1;
+                    }
+                }
+                else {
+                    $shoppingCart[$productId] = 1;
+                }
+                $session->set('shoppingCart', $shoppingCart);
+            }
+        }
+        return new JsonResponse("CODE 200 - Product added to cart", Response::HTTP_OK, [], true);
+    }
+
+    public function removeProductFromShoppingCart(Request $request, int $productId): JsonResponse
+    {
+        $session = $request->getSession();
+        $currentApiToken = $session->get('apiToken');
+        $apiToken = $this->apiTokenRepository->findOneBy(['token' => $currentApiToken]);
+        if($apiToken){
+            if($this->productRepository->findOneBy(['id' => $productId])){
+                $shoppingCart = $session->get('shoppingCart');
+                $shoppingCart[] = $productId;
+                $session->set('shoppingCart', $shoppingCart);
+            }
+        }
         return new JsonResponse("");
     }
 
-    public function removeProductFromShoppingCart(int $productId): JsonResponse
+    public function getStateOfShoppingCart(Request $request): JsonResponse
     {
+        $session = $request->getSession();
+        $currentApiToken = $session->get('apiToken');
+        $apiToken = $this->apiTokenRepository->findOneBy(['token' => $currentApiToken]);
+        if($apiToken){
+
+        }
         return new JsonResponse("");
     }
 
-    public function getStateOfShoppingCart(): JsonResponse
+    public function validateShoppingCart(Request $request): JsonResponse
     {
-        return new JsonResponse("");
-    }
+        $session = $request->getSession();
+        $currentApiToken = $session->get('apiToken');
+        $apiToken = $this->apiTokenRepository->findOneBy(['token' => $currentApiToken]);
+        if($apiToken){
 
-    public function validateShoppingCart(): JsonResponse
-    {
+        }
         return new JsonResponse("");
     }
 }
