@@ -27,7 +27,8 @@ class UsersController extends AbstractController {
         $this->tokenGenerator = $tokenGenerator;
     }
 
-    public function register(Request $request): JsonResponse{
+    public function register(Request $request): JsonResponse
+    {
         $data = json_decode($request->getContent(), true);
         $user = new User(
             $data["login"],
@@ -48,7 +49,8 @@ class UsersController extends AbstractController {
         }
     }
 
-    public function login(Request $request): JsonResponse{
+    public function login(Request $request): JsonResponse
+    {
         $data = json_decode($request->getContent(), true);
         $user = $this->userRepository->findOneBy(['email' => $data['email']]);
         $session = $request->getSession();
@@ -82,7 +84,8 @@ class UsersController extends AbstractController {
         }
     }
 
-    public function updateUser(Request $request, EntityManagerInterface $entityManager): JsonResponse{
+    public function updateUser(Request $request, EntityManagerInterface $entityManager): JsonResponse
+    {
         $session = $request->getSession();
         $apiToken = $this->apiTokenRepository->findOneBy(['token' => $session->get('api_token')]);
         if($session->has('api_token') && $apiToken){
@@ -106,14 +109,16 @@ class UsersController extends AbstractController {
         return new JsonResponse("You are not connected");
     }
 
-    public function displayUser(Request $request): JsonResponse{
+    public function displayUser(Request $request): JsonResponse
+    {
         $session = $request->getSession();
         $apiToken = $this->apiTokenRepository->findOneBy(['token' => $session->get('api_token')]);
         $user = $this->userRepository->findOneBy(['id' => $apiToken->getUserId()]);
         return new JsonResponse($user instanceof User ? $user->toArray() : []);
     }
 
-    public function disconnect(Request $request): JsonResponse{
+    public function disconnect(Request $request): JsonResponse
+    {
         $session = $request->getSession();
         $token = $session->get('api_token');
         $apiToken = $this->apiTokenRepository->findOneBy(['token' => $token]);
