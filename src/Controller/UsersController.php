@@ -100,7 +100,7 @@ class UsersController extends AbstractController {
                 $currentUser->setLastname($data["lastname"]);
                 try {
                     $this->userRepository->save($currentUser, true);
-                    return new JsonResponse("CODE 204 - Update user success", Response::HTTP_NO_CONTENT, [], true);
+                    return new JsonResponse("CODE 200 - Update user success",Response::HTTP_OK, [], true);
                 }
                 catch (Exception $exception) {
                     return new JsonResponse("ERROR 400 - Update user failed", Response::HTTP_BAD_REQUEST, [], true);
@@ -127,6 +127,6 @@ class UsersController extends AbstractController {
             $this->apiTokenRepository->remove($apiToken, true);
         }
         $session->clear();
-        return new JsonResponse("CODE 204 - You have been disconnected", Response::HTTP_NO_CONTENT, [], true);
+        return new JsonResponse("CODE 200 - You have been disconnected", Response::HTTP_OK, [], true);
     }
 }
