@@ -2,10 +2,14 @@
 
 namespace App\Controller;
 
+use App\Entity\Order;
 use App\Entity\Product;
 use App\Repository\ApiTokenRepository;
+use App\Repository\OrderRepository;
 use App\Repository\ProductRepository;
 use App\Repository\UserRepository;
+use Cassandra\Date;
+use DateTime;
 use Exception;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -15,13 +19,16 @@ use Symfony\Component\HttpFoundation\Response;
 class CatalogController extends AbstractController {
     private ProductRepository $productRepository;
     private UserRepository $userRepository;
+    private OrderRepository $orderRepository;
     private ApiTokenRepository $apiTokenRepository;
 
     public function __construct(
-        ProductRepository $productRepository, UserRepository $userRepository, ApiTokenRepository $apiTokenRepository)
+        ProductRepository $productRepository, UserRepository $userRepository,
+        OrderRepository $orderRepository, ApiTokenRepository $apiTokenRepository)
     {
         $this->productRepository = $productRepository;
         $this->userRepository = $userRepository;
+        $this->orderRepository = $orderRepository;
         $this->apiTokenRepository = $apiTokenRepository;
     }
 
@@ -164,7 +171,31 @@ class CatalogController extends AbstractController {
         $currentApiToken = $session->get('apiToken');
         $apiToken = $this->apiTokenRepository->findOneBy(['token' => $currentApiToken]);
         if($apiToken){
-            // NOT DONE YET
+            try {
+                $shoppingCart = $this->getStateOfShoppingCart($request);
+                $shoppingCart = json_decode($shoppingCart->getContent());
+                $totalPrice = 0;
+                $creationDate = new DateTime();
+                $creationDate = $creationDate->format("Y-m-d H:i:s eP");
+                $products = [];
+                if($shoppingCart) {
+                    foreach ($shoppingCart as $productId => $quantity) {
+                        $product = $this->productRepository->findOneBy(['id' => $productId]);
+                        $totalPrice += $product->getPrice() * $quantity;
+                        $products[] = $product;
+                    }
+                    $order = new Order($totalPrice, $creationDate, $products);
+                    $user = $apiToken->getUserId();
+                    $order->setUser($user);
+                    $this->orderRepository->save($order, true);
+                    $session->remove('shoppingCart');
+                    return new JsonResponse("CODE 200 - Shopping cart validated", Response::HTTP_OK, [], true);
+                }
+                return new JsonResponse("CODE 400 - Validate cart failed", Response::HTTP_BAD_REQUEST, [], true);
+            }
+            catch (Exception $exception){
+                return new JsonResponse("CODE 400 - Validate cart failed", Response::HTTP_BAD_REQUEST, [], true);
+            }
         }
         return new JsonResponse("CODE 400 - Not authenticated", Response::HTTP_BAD_REQUEST, [], true);
     }

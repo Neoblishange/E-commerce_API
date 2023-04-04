@@ -16,6 +16,10 @@ class Order
     #[ORM\Column]
     private ?int $id = null;
 
+    #[ORM\ManyToOne(targetEntity: User::class)]
+    #[ORM\JoinColumn(nullable: false)]
+    private ?User $user = null;
+
     #[ORM\Column]
     private ?int $totalPrice = null;
 
@@ -25,9 +29,26 @@ class Order
     #[ORM\Column(type: Types::ARRAY)]
     private array $products = [];
 
+    public function __construct($totalPrice, $creationDate, $products)
+    {
+        $this->totalPrice = $totalPrice;
+        $this->creationDate = $creationDate;
+        $this->products = $products;
+    }
+
     public function getId(): ?int
     {
         return $this->id;
+    }
+
+    public function getUser(): ?User
+    {
+        return $this->user;
+    }
+
+    public function setUser(?User $user): void
+    {
+        $this->user = $user;
     }
 
     public function getTotalPrice(): ?int
