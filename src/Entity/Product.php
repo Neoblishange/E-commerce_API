@@ -30,6 +30,13 @@ class Product
     #[ORM\Column]
     private ?int $price = null;
 
+    public function __construct($name, $description, $photo, $price){
+        $this->name = $name;
+        $this->description = $description;
+        $this->photo = $photo;
+        $this->price = $price;
+    }
+
     public function getId(): ?int
     {
         return $this->id;
@@ -38,6 +45,11 @@ class Product
     public function getUser(): ?User
     {
         return $this->user;
+    }
+
+    public function setUser(?User $user): void
+    {
+        $this->user = $user;
     }
 
     public function getName(): ?string
