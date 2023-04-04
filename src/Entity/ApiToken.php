@@ -35,13 +35,6 @@ class ApiToken
         return $this->user;
     }
 
-    public function setUserId(User $userId): self
-    {
-        $this->user = $userId;
-
-        return $this;
-    }
-
     public function getToken(): ?string
     {
         return $this->token;
