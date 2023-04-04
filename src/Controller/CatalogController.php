@@ -104,12 +104,14 @@ class CatalogController extends AbstractController {
         $apiToken = $this->apiTokenRepository->findOneBy(['token' => $currentApiToken]);
         if($apiToken){
             if($this->productRepository->findOneBy(['id' => $productId])){
-                $shoppingCart = $session->get('shoppingCart');
-                $shoppingCart[] = $productId;
+                $shoppingCart = $session->has('shoppingCart') ? $session->get('shoppingCart') : [];
+                if(isset($shoppingCart[$productId])){
+                    unset($shoppingCart[$productId]);
+                }
                 $session->set('shoppingCart', $shoppingCart);
             }
         }
-        return new JsonResponse("");
+        return new JsonResponse("CODE 200 - Product removed from cart", Response::HTTP_OK, [], true);
     }
 
     public function getStateOfShoppingCart(Request $request): JsonResponse
