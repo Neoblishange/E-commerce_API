@@ -1,14 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="DataSourceManagerImpl" format="xml" multifile-model="true">
-    <data-source source="LOCAL" name="e_commerce@localhost" uuid="36023731-b2c1-4419-956c-50606a731f00">
+    <data-source source="LOCAL" name="e_commerce@localhost" uuid="195a4060-9ecb-47b3-b0a1-128d0159c233">
       <driver-ref>mysql.8</driver-ref>
       <synchronize>true</synchronize>
       <jdbc-driver>com.mysql.cj.jdbc.Driver</jdbc-driver>
       <jdbc-url>jdbc:mysql://localhost:3306/e_commerce</jdbc-url>
-      <jdbc-additional-properties>
-        <property name="APPROVED_DRIVER" value="mariadb" />
-      </jdbc-additional-properties>
       <working-dir>$ProjectFileDir$</working-dir>
     </data-source>
   </component>

@@ -4,6 +4,7 @@ namespace App\Entity;
 
 use App\Repository\UserRepository;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\HttpFoundation\JsonResponse;
 
 #[ORM\Entity(repositoryClass: UserRepository::class)]
 #[ORM\Table(name: '`user`')]
@@ -14,13 +15,13 @@ class User
     #[ORM\Column]
     private ?int $id = null;
 
-    #[ORM\Column(length: 255)]
+    #[ORM\Column(length: 255, unique: true)]
     private ?string $login = null;
 
     #[ORM\Column(length: 255)]
     private ?string $password = null;
 
-    #[ORM\Column(length: 255)]
+    #[ORM\Column(length: 255, unique: true)]
     private ?string $email = null;
 
     #[ORM\Column(length: 255)]
@@ -28,6 +29,14 @@ class User
 
     #[ORM\Column(length: 255)]
     private ?string $lastname = null;
+
+    public function __construct($login, $password, $email, $firstname, $lastname){
+        $this->login = $login;
+        $this->password = $password;
+        $this->email = $email;
+        $this->firstname = $firstname;
+        $this->lastname = $lastname;
+    }
 
     public function getId(): ?int
     {
@@ -92,5 +101,9 @@ class User
         $this->lastname = $lastname;
 
         return $this;
+    }
+
+    public function toArray(): array {
+        return array($this->login, $this->password, $this->email, $this->firstname, $this->lastname);
     }
 }

@@ -24,6 +24,11 @@ displayUser:
     controller: App\Controller\UsersController::displayUser
     methods: GET
 
+disconnect:
+    path: /api/disconnect
+    controller: App\Controller\UsersController::disconnect
+    methods: POST
+
 getAllProducts:
     path: /api/products
     controller: App\Controller\CatalogController::getAllProducts
