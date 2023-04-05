@@ -28,7 +28,7 @@ class Product
     private ?string $photo = null;
 
     #[ORM\Column]
-    private ?int $price = null;
+    private ?float $price = null;
 
     public function __construct($name, $description, $photo, $price){
         $this->name = $name;
@@ -88,15 +88,14 @@ class Product
         return $this;
     }
 
-    public function getPrice(): ?int
+    public function getPrice(): ?float
     {
         return $this->price;
     }
 
-    public function setPrice(int $price): self
+    public function setPrice(float $price): self
     {
         $this->price = $price;
-
         return $this;
     }
 

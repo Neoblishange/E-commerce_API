@@ -21,7 +21,7 @@ class Order
     private ?User $user = null;
 
     #[ORM\Column]
-    private ?int $totalPrice = null;
+    private ?float $totalPrice = null;
 
     #[ORM\Column(length: 255)]
     private ?string $creationDate = null;
@@ -51,12 +51,12 @@ class Order
         $this->user = $user;
     }
 
-    public function getTotalPrice(): ?int
+    public function getTotalPrice(): ?float
     {
         return $this->totalPrice;
     }
 
-    public function setTotalPrice(int $totalPrice): self
+    public function setTotalPrice(float $totalPrice): self
     {
         $this->totalPrice = $totalPrice;
 
@@ -83,7 +83,6 @@ class Order
     public function setProducts(array $products): self
     {
         $this->products = $products;
-
         return $this;
     }
 
