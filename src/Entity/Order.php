@@ -3,6 +3,8 @@
 namespace App\Entity;
 
 use App\Repository\OrderRepository;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -26,14 +28,15 @@ class Order
     #[ORM\Column(length: 255)]
     private ?string $creationDate = null;
 
-    #[ORM\Column(type: Types::ARRAY)]
-    private array $products = [];
+    #[ORM\ManyToMany(targetEntity: Product::class)]
+    #[ORM\JoinTable(name: 'order_product')]
+    private Collection $products;
 
     public function __construct($totalPrice, $creationDate, $products)
     {
         $this->totalPrice = $totalPrice;
         $this->creationDate = $creationDate;
-        $this->products = $products;
+        $this->products = new ArrayCollection($products);
     }
 
     public function getId(): ?int
@@ -75,30 +78,25 @@ class Order
         return $this;
     }
 
-    public function getProducts(): array
+    public function getProducts(): Collection
     {
-        return $this->products;
-    }
-
-    public function setProducts(array $products): self
-    {
-        $this->products = $products;
-        return $this;
+        $products = new ArrayCollection();
+        foreach ($this->products as $product) {
+            $product instanceof Product ? $products[] = json_decode($product->toJson()->getContent()) : [];
+        }
+        return $products;
     }
 
     public function addProduct(Product $product): void
     {
-        $this->products[] = $product;
+        if (!$this->products->contains($product)) {
+            $this->products[] = $product;
+        }
     }
 
-    public function removeProduct(Product $productToRemove): void
+    public function removeProduct(Product $product): void
     {
-        foreach ($this->products as $key => $product) {
-            if ($product === $productToRemove) {
-                unset($this->products[$key]);
-                break;
-            }
-        }
+        $this->products->removeElement($product);
     }
 
     public function toJson(): JsonResponse
@@ -107,7 +105,7 @@ class Order
             'id' => $this->getId(),
             'totalPrice' => $this->getTotalPrice(),
             'creationDate' => $this->getCreationDate(),
-            'products' => $this->getProducts(),
+            'products' => $this->getProducts()->toArray(),
         ];
         return new JsonResponse($data);
     }
