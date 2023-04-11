@@ -31,9 +31,6 @@ class Order
     #[ORM\JoinTable(name: 'order_product')]
     private Collection $products;
 
-    #[ORM\ManyToMany(targetEntity: Product::class)]
-    private Collection $quantity;
-
     public function __construct($totalPrice, $creationDate, $products)
     {
         $this->totalPrice = $totalPrice;

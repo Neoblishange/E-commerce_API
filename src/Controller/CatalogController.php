@@ -181,6 +181,7 @@ class CatalogController extends AbstractController {
                 if($shoppingCart) {
                     foreach ($shoppingCart as $productId => $quantity) {
                         $product = $this->productRepository->findOneBy(['id' => $productId]);
+                        $product->setQuantity($quantity);
                         $totalPrice += $product->getPrice() * $quantity;
                         $products[] = $product;
                     }
