@@ -5,7 +5,6 @@ namespace App\Entity;
 use App\Repository\OrderRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
-use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\HttpFoundation\JsonResponse;
 
@@ -31,6 +30,9 @@ class Order
     #[ORM\ManyToMany(targetEntity: Product::class)]
     #[ORM\JoinTable(name: 'order_product')]
     private Collection $products;
+
+    #[ORM\ManyToMany(targetEntity: Product::class)]
+    private Collection $quantity;
 
     public function __construct($totalPrice, $creationDate, $products)
     {
@@ -108,5 +110,15 @@ class Order
             'products' => $this->getProducts()->toArray(),
         ];
         return new JsonResponse($data);
+    }
+
+    public function getQuantity(): Collection
+    {
+        return $this->quantity;
+    }
+
+    public function setQuantity(Collection $quantity): void
+    {
+        $this->quantity = $quantity;
     }
 }
