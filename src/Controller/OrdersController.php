@@ -21,9 +21,12 @@ class OrdersController extends AbstractController {
     public function getAllOrdersOfUser(): JsonResponse
     {
         $allOrders = $this->orderRepository->findAll();
-        $response = [];
+        $response = [
+            'success' => 200,
+            'found' => sizeof($allOrders),
+        ];
         foreach ($allOrders as $order){
-            $response[] = $order instanceof Order ? json_decode($order->toJson()->getContent()) : [];
+            $response['orders'][] = $order instanceof Order ? json_decode($order->toJson()->getContent()) : [];
         }
         $response = json_encode($response);
         return new JsonResponse($response, 200, [], true);
@@ -32,6 +35,6 @@ class OrdersController extends AbstractController {
     public function getOrder(int $orderId): JsonResponse
     {
         $order = $this->orderRepository->findOneBy(['id' => $orderId]);
-        return new JsonResponse($order instanceof Order ? $order->toJson() : [], 200, [], true);
+        return new JsonResponse($order instanceof Order ? $order->toJson()->getContent() : [], 200, [], true);
     }
 }

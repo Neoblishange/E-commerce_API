@@ -43,10 +43,10 @@ class UsersController extends AbstractController {
         try {
             $this->userRepository->save($user, true);
             $this->apiTokenRepository->save($apiToken, true);
-            return new JsonResponse("CODE 201 - New user registered", Response::HTTP_CREATED, [], true);
+            return new JsonResponse(['success' => "CODE 201 - New user registered"], Response::HTTP_CREATED, [], false);
         }
         catch (Exception $exception) {
-            return new JsonResponse("ERROR 401 - User exists", Response::HTTP_UNAUTHORIZED, [], true);
+            return new JsonResponse(['error' => "ERROR 401 - User already exists"], Response::HTTP_UNAUTHORIZED, [], false);
         }
     }
 
@@ -58,16 +58,16 @@ class UsersController extends AbstractController {
         if($session->has('apiToken')){
             $apiToken = $this->apiTokenRepository->findOneBy(['token' => $session->get('apiToken')]);
             if($apiToken){
-                return new JsonResponse("CODE 200 - Authenticated with token", Response::HTTP_OK, [], true);
+                return new JsonResponse(['success' => "CODE 200 - Authenticated with token"], Response::HTTP_OK, [], false);
             }
         }
         if (!$user) {
-            return new JsonResponse("ERROR 401 - Bad logins", Response::HTTP_UNAUTHORIZED, [], true);
+            return new JsonResponse(['error' => "ERROR 401 - Bad logins"], Response::HTTP_UNAUTHORIZED, [], false);
         }
         else {
             $isValid = $user->getPassword() == $data['password'];
             if(!$isValid) {
-                return new JsonResponse("ERROR 401 - Bad logins", Response::HTTP_UNAUTHORIZED, [], true);
+                return new JsonResponse(['error' => "ERROR 401 - Bad logins"], Response::HTTP_UNAUTHORIZED, [], false);
             }
             else {
                 $newToken = $this->tokenGenerator->generateToken();
@@ -79,7 +79,7 @@ class UsersController extends AbstractController {
                 else {
                     $session->set('apiToken', $apiToken->getToken());
                 }
-                return new JsonResponse("CODE 200 - Authenticated with login", Response::HTTP_OK, [], true);
+                return new JsonResponse(['success' => "CODE 200 - Authenticated with login"], Response::HTTP_OK, [], false);
             }
         }
     }
@@ -99,14 +99,14 @@ class UsersController extends AbstractController {
                 $currentUser->setLastname($data["lastname"]);
                 try {
                     $this->userRepository->save($currentUser, true);
-                    return new JsonResponse("CODE 200 - Update user success",Response::HTTP_OK, [], true);
+                    return new JsonResponse(['success' => "CODE 200 - Update user success"],Response::HTTP_OK, [], false);
                 }
                 catch (Exception $exception) {
-                    return new JsonResponse("ERROR 400 - Update user failed", Response::HTTP_BAD_REQUEST, [], true);
+                    return new JsonResponse(['error' => "ERROR 400 - Update user failed"], Response::HTTP_BAD_REQUEST, [], false);
                 }
             }
         }
-        return new JsonResponse("ERROR 401 - You are not connected", Response::HTTP_UNAUTHORIZED, [], true);
+        return new JsonResponse(['error' => "ERROR 401 - You are not connected"], Response::HTTP_UNAUTHORIZED, [], false);
     }
 
     public function displayUser(Request $request): JsonResponse
@@ -114,7 +114,7 @@ class UsersController extends AbstractController {
         $session = $request->getSession();
         $apiToken = $this->apiTokenRepository->findOneBy(['token' => $session->get('apiToken')]);
         $user = $this->userRepository->findOneBy(['id' => $apiToken->getUserId()]);
-        return new JsonResponse($user instanceof User ? $user->toJson() : [], 200, [], true);
+        return new JsonResponse($user instanceof User ? $user->toJson()->getContent() : [], 200, [], true);
     }
 
     public function disconnect(Request $request): JsonResponse
@@ -125,6 +125,6 @@ class UsersController extends AbstractController {
             $this->apiTokenRepository->remove($apiToken, true);
         }
         $session->clear();
-        return new JsonResponse("CODE 200 - You have been disconnected", Response::HTTP_OK, [], true);
+        return new JsonResponse(['success' => "CODE 200 - You have been disconnected"], Response::HTTP_OK, [], false);
     }
 }

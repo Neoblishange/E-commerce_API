@@ -17,7 +17,7 @@ login:
 updateUser:
     path: /api/users
     controller: App\Controller\UsersController::updateUser
-    methods: POST
+    methods: PUT
 
 displayUser:
     path: /api/users
@@ -38,6 +38,8 @@ getProduct:
     path: /api/products/{productId}
     controller: App\Controller\CatalogController::getProduct
     methods: GET
+    requirements:
+        productId: \d+
 
 addProduct:
     path: /api/products
@@ -47,12 +49,16 @@ addProduct:
 modifyProduct:
     path: /api/products/{productId}
     controller: App\Controller\CatalogController::modifyAndDeleteProduct
-    methods: POST
+    methods: PUT
+    requirements:
+        productId: \d+
 
 deleteProduct:
     path: /api/products/{productId}
     controller: App\Controller\CatalogController::modifyAndDeleteProduct
     methods: DELETE
+    requirements:
+        productId: \d+
 
 addProductToShoppingCart:
     path: /api/carts/{productId}
@@ -65,6 +71,8 @@ removeProductFromShoppingCart:
     path: /api/carts/{productId}
     controller: App\Controller\CatalogController::removeProductFromShoppingCart
     methods: DELETE
+    requirements:
+        productId: \d+
 
 getStateOfShoppingCart:
     path: /api/carts
@@ -85,3 +93,5 @@ getOrder:
     path: /api/orders/{orderId}
     controller: App\Controller\OrdersController::getOrder
     methods: GET
+    requirements:
+        orderId: \d+
