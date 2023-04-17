@@ -39,22 +39,23 @@ The API will respond with a token that you can use for subsequent requests.
 
 ## API Endpoints
 
-|                | Method | Endpoint                  | Description                          |
-|----------------|--------|---------------------------|--------------------------------------|
-| Authentication | POST   | /api/register             | Register a new user                  |
-|                | POST   | /api/login                | Login to obtain authentication token |
-| Users          | PUT    | /api/users                | Update current user information      |
-|                | GET    | /api/users                | Display current user information     |
-| Products       | GET    | /api/products             | Get list of products                 |
-|                | GET    | /api/products/{productId} | Get information of a product         |
-|                | POST   | /api/products             | Add a product                        |
-|                | PUT    | /api/products/{productId} | Modify a product                     |
-|                | DELETE | /api/products/{productId} | Delete a product                     |
-| Carts          | POST   | /api/carts/{productId}    | Add product to shopping cart         |
-|                | DELETE | /api/carts/{productId}    | Remove product from shopping cart    |
-|                | GET    | /api/carts                | Get the state of the shopping cart   |
-|                | POST   | /api/carts/validate       | Validate the shopping cart           |
-| Orders         | GET    | /api/orders               | Get all orders of current user       |
-|                | GET    | /api/orders/{orderId}     | Get information about an order       |
+|                | Method | AUTH | Endpoint                  | Description                          |
+|----------------|--------|------|---------------------------|--------------------------------------|
+| Authentication | POST   | NO   | /api/register             | Register a new user                  |
+|                | POST   | NO   | /api/login                | Login to obtain authentication token |
+| Users          | PUT    | YES  | /api/users                | Update current user information      |
+|                | GET    | YES  | /api/users                | Display current user information     |
+| Products       | GET    | NO   | /api/products             | Get list of products                 |
+|                | GET    | NO   | /api/products/{productId} | Get informations of a product        |
+|                | POST   | YES  | /api/products             | Add a product                        |
+|                | PUT    | YES  | /api/products/{productId} | Modify a product                     |
+|                | DELETE | YES  | /api/products/{productId} | Delete a product                     |
+| Carts          | POST   | YES  | /api/carts/{productId}    | Add product to shopping cart         |
+|                | DELETE | YES  | /api/carts/{productId}    | Remove product from shopping cart    |
+|                | GET    | YES  | /api/carts                | Get the state of the shopping cart   |
+|                | POST   | YES  | /api/carts/validate       | Validate the shopping cart           |
+| Orders         | GET    | YES  | /api/orders               | Get all orders of current user       |
+|                | GET    | YES  | /api/orders/{orderId}     | Get information about an order       |
+
 
 # END
