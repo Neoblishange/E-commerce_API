@@ -1,9 +1,3 @@
-<style>
-    body {
-        text-align: justify;
-    }
-</style>
-
 # E-commerce API
 This is an API for an e-commerce website that allows users to browse products,
 add items to their cart, and place orders.
