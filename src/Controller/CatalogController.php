@@ -63,7 +63,7 @@ class CatalogController extends AbstractController {
                     $data["name"], $data["description"],
                     $data["photo"], $data["price"]
                 );
-                $user = $this->authController->getToken($request)->getUserId();
+                $user = $this->authController->getApiToken($request)->getUserId();
                 $product->setUser($user);
                 $this->productRepository->save($product, true);
                 return new JsonResponse(['success' => "CODE 200 - Product added"], Response::HTTP_OK, [], false);
@@ -81,7 +81,7 @@ class CatalogController extends AbstractController {
             try {
                 $product = $this->productRepository->findOneBy(['id' => $productId]);
                 if($product){
-                    $user = $this->userRepository->findOneBy(['id' => $this->authController->getToken($request)->getUserId()]);
+                    $user = $this->userRepository->findOneBy(['id' => $this->authController->getApiToken($request)->getUserId()]);
                     if($user === $product->getUser()){
                         if($request->getMethod() == Request::METHOD_POST) {
                             $data = json_decode($request->getContent(), true);
@@ -177,7 +177,7 @@ class CatalogController extends AbstractController {
                         $products[] = $product;
                     }
                     $order = new Order($totalPrice, $creationDate, $products);
-                    $user = $this->authController->getToken($request)->getUserId();
+                    $user = $this->authController->getApiToken($request)->getUserId();
                     $order->setUser($user);
                     $this->orderRepository->save($order, true);
                     $session->remove('shoppingCart');

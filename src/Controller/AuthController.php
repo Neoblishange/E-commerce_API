@@ -18,7 +18,7 @@ class AuthController
     public function authenticate(Request $request) : bool
     {
         if($request->headers->has('Authorization')) {
-            $apiToken = $this->getToken($request);
+            $apiToken = $this->getApiToken($request);
             if($apiToken) {
                 return true;
             }
@@ -26,7 +26,7 @@ class AuthController
         return false;
     }
 
-    public function getToken(Request $request): ?ApiToken
+    public function getApiToken(Request $request): ?ApiToken
     {
         $bearerToken = substr($request->headers->get('Authorization'), 7);
         return $this->apiTokenRepository->findOneBy(['token' => $bearerToken]);
