@@ -19,13 +19,16 @@ class UsersController extends AbstractController {
     private UserRepository $userRepository;
     private ApiTokenRepository $apiTokenRepository;
     private TokenGeneratorInterface $tokenGenerator;
+    private AuthController $authController;
 
-    public function __construct(UserRepository $userRepository,
-        ApiTokenRepository $apiTokenRepository, TokenGeneratorInterface $tokenGenerator
+    public function __construct(
+        UserRepository $userRepository, ApiTokenRepository $apiTokenRepository,
+        TokenGeneratorInterface $tokenGenerator, AuthController $authController
     ){
         $this->userRepository = $userRepository;
         $this->apiTokenRepository = $apiTokenRepository;
         $this->tokenGenerator = $tokenGenerator;
+        $this->authController = $authController;
     }
 
     public function register(Request $request): JsonResponse
@@ -86,11 +89,9 @@ class UsersController extends AbstractController {
 
     public function updateUser(Request $request, EntityManagerInterface $entityManager): JsonResponse
     {
-        $session = $request->getSession();
-        $apiToken = $this->apiTokenRepository->findOneBy(['token' => $session->get('apiToken')]);
-        if($session->has('apiToken') && $apiToken){
+        if($this->authController->authenticate($request)) {
             $data = json_decode($request->getContent(), true);
-            $currentUser = $this->userRepository->findOneBy(['id' => $apiToken->getUserId()]);
+            $currentUser = $this->userRepository->findOneBy(['id' => $this->authController->getToken($request)->getUserId()]);
             if($currentUser){
                 $currentUser->setLogin($data["login"]);
                 $currentUser->setPassword($data["password"]);
@@ -106,15 +107,16 @@ class UsersController extends AbstractController {
                 }
             }
         }
-        return new JsonResponse(['error' => "ERROR 401 - You are not connected"], Response::HTTP_UNAUTHORIZED, [], false);
+        return new JsonResponse(['error' => "CODE 401 - Unauthorized"], Response::HTTP_UNAUTHORIZED, [], false);
     }
 
     public function displayUser(Request $request): JsonResponse
     {
-        $session = $request->getSession();
-        $apiToken = $this->apiTokenRepository->findOneBy(['token' => $session->get('apiToken')]);
-        $user = $this->userRepository->findOneBy(['id' => $apiToken->getUserId()]);
-        return new JsonResponse($user instanceof User ? $user->toJson()->getContent() : [], 200, [], true);
+        if($this->authController->authenticate($request)) {
+            $user = $this->userRepository->findOneBy(['id' => $this->authController->getToken($request)->getUserId()]);
+            return new JsonResponse($user instanceof User ? $user->toJson()->getContent() : [], 200, [], true);
+        }
+        return new JsonResponse(['error' => "CODE 401 - Unauthorized"], Response::HTTP_UNAUTHORIZED, [], false);
     }
 
     public function disconnect(Request $request): JsonResponse

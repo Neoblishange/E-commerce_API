@@ -20,15 +20,18 @@ class CatalogController extends AbstractController {
     private UserRepository $userRepository;
     private OrderRepository $orderRepository;
     private ApiTokenRepository $apiTokenRepository;
+    private AuthController $authController;
 
     public function __construct(
         ProductRepository $productRepository, UserRepository $userRepository,
-        OrderRepository $orderRepository, ApiTokenRepository $apiTokenRepository)
+        OrderRepository $orderRepository, ApiTokenRepository $apiTokenRepository,
+        AuthController $authController)
     {
         $this->productRepository = $productRepository;
         $this->userRepository = $userRepository;
         $this->orderRepository = $orderRepository;
         $this->apiTokenRepository = $apiTokenRepository;
+        $this->authController = $authController;
     }
 
     public function getAllProducts(): JsonResponse
@@ -53,17 +56,14 @@ class CatalogController extends AbstractController {
 
     public function addProduct(Request $request): JsonResponse
     {
-        $session = $request->getSession();
-        $currentApiToken = $session->get('apiToken');
-        $apiToken = $this->apiTokenRepository->findOneBy(['token' => $currentApiToken]);
-        if($apiToken){
+        if($this->authController->authenticate($request)) {
             try {
                 $data = json_decode($request->getContent(), true);
                 $product = new Product(
                     $data["name"], $data["description"],
                     $data["photo"], $data["price"]
                 );
-                $user = $apiToken->getUserId();
+                $user = $this->authController->getToken($request)->getUserId();
                 $product->setUser($user);
                 $this->productRepository->save($product, true);
                 return new JsonResponse(['success' => "CODE 200 - Product added"], Response::HTTP_OK, [], false);
@@ -72,19 +72,16 @@ class CatalogController extends AbstractController {
                 return new JsonResponse(['error' => "ERROR 400 - Add product failed"], Response::HTTP_BAD_REQUEST, [], false);
             }
         }
-        return new JsonResponse(['error' => "ERROR 400 - Not authenticated"], Response::HTTP_BAD_REQUEST, [], false);
+        return new JsonResponse(['error' => "CODE 401 - Unauthorized"], Response::HTTP_UNAUTHORIZED, [], false);
     }
 
     public function modifyAndDeleteProduct(Request $request, int $productId): JsonResponse
     {
-        $session = $request->getSession();
-        $currentApiToken = $session->get('apiToken');
-        $apiToken = $this->apiTokenRepository->findOneBy(['token' => $currentApiToken]);
-        if($apiToken){
+        if($this->authController->authenticate($request)) {
             try {
                 $product = $this->productRepository->findOneBy(['id' => $productId]);
                 if($product){
-                    $user = $this->userRepository->findOneBy(['id' => $apiToken->getUserId()]);
+                    $user = $this->userRepository->findOneBy(['id' => $this->authController->getToken($request)->getUserId()]);
                     if($user === $product->getUser()){
                         if($request->getMethod() == Request::METHOD_POST) {
                             $data = json_decode($request->getContent(), true);
@@ -107,15 +104,13 @@ class CatalogController extends AbstractController {
                 return new JsonResponse(['error' => 'ERROR 400 - Modify/Delete product failed'], Response::HTTP_BAD_REQUEST, [], false);
             }
         }
-        return new JsonResponse(['error' => "ERROR 400 - Not authenticated"], Response::HTTP_BAD_REQUEST, [], false);
+        return new JsonResponse(['error' => "CODE 401 - Unauthorized"], Response::HTTP_UNAUTHORIZED, [], false);
     }
 
     public function addProductToShoppingCart(Request $request, int $productId): JsonResponse
     {
         $session = $request->getSession();
-        $currentApiToken = $session->get('apiToken');
-        $apiToken = $this->apiTokenRepository->findOneBy(['token' => $currentApiToken]);
-        if($apiToken){
+        if($this->authController->authenticate($request)) {
             if($this->productRepository->findOneBy(['id' => $productId])){
                 $shoppingCart = $session->has('shoppingCart') ? $session->get('shoppingCart') : [];
                 if(sizeof($shoppingCart) > 0) {
@@ -133,15 +128,13 @@ class CatalogController extends AbstractController {
             }
             return new JsonResponse(['error' => "ERROR 400 - Product doesn't exist"], Response::HTTP_BAD_REQUEST, [], false);
         }
-        return new JsonResponse(['error' => "ERROR 400 - Not authenticated"], Response::HTTP_BAD_REQUEST, [], false);
+        return new JsonResponse(['error' => "CODE 401 - Unauthorized"], Response::HTTP_UNAUTHORIZED, [], false);
     }
 
     public function removeProductFromShoppingCart(Request $request, int $productId): JsonResponse
     {
         $session = $request->getSession();
-        $currentApiToken = $session->get('apiToken');
-        $apiToken = $this->apiTokenRepository->findOneBy(['token' => $currentApiToken]);
-        if($apiToken){
+        if($this->authController->authenticate($request)) {
             if($this->productRepository->findOneBy(['id' => $productId])){
                 $shoppingCart = $session->has('shoppingCart') ? $session->get('shoppingCart') : [];
                 if(isset($shoppingCart[$productId])){
@@ -152,27 +145,23 @@ class CatalogController extends AbstractController {
             }
             return new JsonResponse(['error' => "ERROR 400 - Product doesn't exist"], Response::HTTP_BAD_REQUEST, [], false);
         }
-        return new JsonResponse(['error' => "ERROR 400 - Not authenticated"], Response::HTTP_BAD_REQUEST, [], false);
+        return new JsonResponse(['error' => "CODE 401 - Unauthorized"], Response::HTTP_UNAUTHORIZED, [], false);
     }
 
     public function getStateOfShoppingCart(Request $request): JsonResponse
     {
         $session = $request->getSession();
-        $currentApiToken = $session->get('apiToken');
-        $apiToken = $this->apiTokenRepository->findOneBy(['token' => $currentApiToken]);
-        if($apiToken){
+        if($this->authController->authenticate($request)) {
             $shoppingCart = $session->has('shoppingCart') ? $session->get('shoppingCart') : [];
             return new JsonResponse(json_encode($shoppingCart), Response::HTTP_OK, [], true);
         } // VOIR AVEC NICO SI ON AFFICHE SEULEMENT IDs DES PRODUITS OU TOUT LE DESCRIPTIF DES PRODUITS
-        return new JsonResponse(['error' => "ERROR 400 - Not authenticated"], Response::HTTP_BAD_REQUEST, [], false);
+        return new JsonResponse(['error' => "CODE 401 - Unauthorized"], Response::HTTP_UNAUTHORIZED, [], false);
     }
 
     public function validateShoppingCart(Request $request): JsonResponse
     {
         $session = $request->getSession();
-        $currentApiToken = $session->get('apiToken');
-        $apiToken = $this->apiTokenRepository->findOneBy(['token' => $currentApiToken]);
-        if($apiToken){
+        if($this->authController->authenticate($request)) {
             try {
                 $shoppingCart = $this->getStateOfShoppingCart($request);
                 $shoppingCart = json_decode($shoppingCart->getContent());
@@ -188,7 +177,7 @@ class CatalogController extends AbstractController {
                         $products[] = $product;
                     }
                     $order = new Order($totalPrice, $creationDate, $products);
-                    $user = $apiToken->getUserId();
+                    $user = $this->authController->getToken($request)->getUserId();
                     $order->setUser($user);
                     $this->orderRepository->save($order, true);
                     $session->remove('shoppingCart');
@@ -200,6 +189,6 @@ class CatalogController extends AbstractController {
                 return new JsonResponse(['error' => "ERROR 400 - Validate cart failed"], Response::HTTP_BAD_REQUEST, [], false);
             }
         }
-        return new JsonResponse(['error' => "ERROR 400 - Not authenticated"], Response::HTTP_BAD_REQUEST, [], false);
+        return new JsonResponse(['error' => "CODE 401 - Unauthorized"], Response::HTTP_UNAUTHORIZED, [], false);
     }
 }
