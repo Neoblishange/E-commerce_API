@@ -58,7 +58,7 @@ class UsersController extends AbstractController {
         if($session->has('apiToken')){
             $apiToken = $this->apiTokenRepository->findOneBy(['token' => $session->get('apiToken')]);
             if($apiToken){
-                return new JsonResponse(['success' => "CODE 200 - Authenticated with token"], Response::HTTP_OK, [], false);
+                return new JsonResponse(['token' => $apiToken->getToken()], Response::HTTP_OK, [], false);
             }
         }
         if (!$user) {
@@ -79,7 +79,7 @@ class UsersController extends AbstractController {
                 else {
                     $session->set('apiToken', $apiToken->getToken());
                 }
-                return new JsonResponse(['success' => "CODE 200 - Authenticated with login"], Response::HTTP_OK, [], false);
+                return new JsonResponse(['token' => $apiToken->getToken()], Response::HTTP_OK, [], false);
             }
         }
     }
