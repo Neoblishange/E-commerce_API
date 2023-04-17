@@ -30,9 +30,6 @@ class Product
     #[ORM\Column]
     private ?float $price = null;
 
-    #[ORM\Column(type: "integer")]
-    private ?int $quantity = 1;
-
     public function __construct($name, $description, $photo, $price){
         $this->name = $name;
         $this->description = $description;
@@ -100,16 +97,6 @@ class Product
     {
         $this->price = $price;
         return $this;
-    }
-
-    public function getQuantity(): ?int
-    {
-        return $this->quantity;
-    }
-
-    public function setQuantity(?int $quantity): void
-    {
-        $this->quantity = $quantity;
     }
 
     public function toJson(): JsonResponse

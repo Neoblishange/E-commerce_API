@@ -112,6 +112,8 @@ class UsersController extends AbstractController {
         if($this->authController->authenticate($request)) {
             $apiToken = $this->apiTokenRepository->findOneBy(['token' => $this->authController->getApiToken($request)->getToken()]);
             $this->apiTokenRepository->remove($apiToken, true);
+            $session = $request->getSession();
+            $session->remove('shoppingCart');
             return new JsonResponse(['success' => "CODE 200 - You have been disconnected"], Response::HTTP_OK, [], false);
         }
         return new JsonResponse(['error' => "CODE 401 - Unauthorized"], Response::HTTP_UNAUTHORIZED, [], false);

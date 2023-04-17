@@ -9,6 +9,7 @@ use App\Repository\OrderRepository;
 use App\Repository\ProductRepository;
 use App\Repository\UserRepository;
 use DateTime;
+use Doctrine\ORM\EntityManagerInterface;
 use Exception;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -21,17 +22,19 @@ class CatalogController extends AbstractController {
     private OrderRepository $orderRepository;
     private ApiTokenRepository $apiTokenRepository;
     private AuthController $authController;
+    private EntityManagerInterface $entityManager;
 
     public function __construct(
         ProductRepository $productRepository, UserRepository $userRepository,
         OrderRepository $orderRepository, ApiTokenRepository $apiTokenRepository,
-        AuthController $authController)
+        AuthController $authController, EntityManagerInterface $entityManager)
     {
         $this->productRepository = $productRepository;
         $this->userRepository = $userRepository;
         $this->orderRepository = $orderRepository;
         $this->apiTokenRepository = $apiTokenRepository;
         $this->authController = $authController;
+        $this->entityManager = $entityManager;
     }
 
     public function getAllProducts(): JsonResponse
@@ -114,14 +117,14 @@ class CatalogController extends AbstractController {
             if($this->productRepository->findOneBy(['id' => $productId])){
                 $shoppingCart = $session->has('shoppingCart') ? $session->get('shoppingCart') : [];
                 if(sizeof($shoppingCart) > 0) {
-                    foreach ($shoppingCart as $id => $quantity) {
-                        $id === $productId
-                            ? $shoppingCart[$productId] = $quantity + 1
-                            : $shoppingCart[$productId] = 1;
+                    foreach ($shoppingCart as $productInOrder) {
+                        $productInOrder['id'] === $productId
+                            ? $shoppingCart[$productId]['quantity'] = $productInOrder['quantity'] + 1
+                            : $shoppingCart[$productId] = ['id' => $productId, 'quantity' => 1];
                     }
                 }
                 else {
-                    $shoppingCart[$productId] = 1;
+                    $shoppingCart[$productId] = ['id' => $productId, 'quantity' => 1];
                 }
                 $session->set('shoppingCart', $shoppingCart);
                 return new JsonResponse(['success' => "CODE 200 - Product added to cart"], Response::HTTP_OK, [], false);
@@ -153,8 +156,13 @@ class CatalogController extends AbstractController {
         $session = $request->getSession();
         if($this->authController->authenticate($request)) {
             $shoppingCart = $session->has('shoppingCart') ? $session->get('shoppingCart') : [];
-            return new JsonResponse(json_encode($shoppingCart), Response::HTTP_OK, [], true);
-        } // VOIR AVEC NICO SI ON AFFICHE SEULEMENT IDs DES PRODUITS OU TOUT LE DESCRIPTIF DES PRODUITS
+            $response = [
+                'success' => 200,
+                'found' => sizeof($shoppingCart),
+                'products' => $shoppingCart
+            ];
+            return new JsonResponse(json_encode($response), Response::HTTP_OK, [], true);
+        }
         return new JsonResponse(['error' => "CODE 401 - Unauthorized"], Response::HTTP_UNAUTHORIZED, [], false);
     }
 
@@ -163,23 +171,33 @@ class CatalogController extends AbstractController {
         $session = $request->getSession();
         if($this->authController->authenticate($request)) {
             try {
-                $shoppingCart = $this->getStateOfShoppingCart($request);
-                $shoppingCart = json_decode($shoppingCart->getContent());
+                $shoppingCart = $session->has('shoppingCart') ? $session->get('shoppingCart') : [];
                 $totalPrice = 0;
                 $creationDate = new DateTime();
                 $creationDate = $creationDate->format("Y-m-d H:i:s eP");
-                $products = [];
+                $productsOrder = [];
                 if($shoppingCart) {
-                    foreach ($shoppingCart as $productId => $quantity) {
-                        $product = $this->productRepository->findOneBy(['id' => $productId]);
-                        $product->setQuantity($quantity);
-                        $totalPrice += $product->getPrice() * $quantity;
-                        $products[] = $product;
+                    foreach ($shoppingCart as $productInOrder) {
+                        $product = $this->productRepository->findOneBy(['id' => $productInOrder['id']]);
+                        $totalPrice += $product->getPrice() * $productInOrder['quantity'];
+                        $productsOrder[] = $product;
                     }
-                    $order = new Order($totalPrice, $creationDate, $products);
+                    $order = new Order($totalPrice, $creationDate, $productsOrder);
                     $user = $this->authController->getApiToken($request)->getUserId();
                     $order->setUser($user);
                     $this->orderRepository->save($order, true);
+
+                    $orderId = $order->getId();
+                    $conn = $this->entityManager->getConnection();
+                    foreach ($shoppingCart as $productInOrder) {
+                        $sql = 'UPDATE order_product SET quantity = :quantity WHERE order_id= :order_id AND product_id = :product_id';
+                        $exec = $conn->executeStatement($sql, [
+                            'quantity' => $productInOrder['quantity'],
+                            'order_id' => $orderId,
+                            'product_id' => $productInOrder['id']
+                        ]);
+                    }
+                    $conn->close();
                     $session->remove('shoppingCart');
                     return new JsonResponse(['success' => "CODE 200 - Shopping cart validated"], Response::HTTP_OK, [], false);
                 }

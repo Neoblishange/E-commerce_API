@@ -108,14 +108,4 @@ class Order
         ];
         return new JsonResponse($data);
     }
-
-    public function getQuantity(): Collection
-    {
-        return $this->quantity;
-    }
-
-    public function setQuantity(Collection $quantity): void
-    {
-        $this->quantity = $quantity;
-    }
 }
