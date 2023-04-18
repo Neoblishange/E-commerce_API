@@ -54,7 +54,10 @@ class CatalogController extends AbstractController {
     public function getProduct(int $productId): JsonResponse
     {
         $product = $this->productRepository->findOneBy(['id' => $productId]);
-        return new JsonResponse($product instanceof Product ? $product->toJson()->getContent() : [], 200, [], true);
+        if($product) {
+            return new JsonResponse($product instanceof Product ? $product->toJson()->getContent() : [], 200, [], true);
+        }
+        return new JsonResponse(['error' => "ERROR 404 - Product not found"], Response::HTTP_BAD_REQUEST, [], false);
     }
 
     public function addProduct(Request $request): JsonResponse
@@ -101,7 +104,7 @@ class CatalogController extends AbstractController {
                         }
                     }
                 }
-                return new JsonResponse(['error' => 'ERROR 400 - Modify/Delete product failed'], Response::HTTP_BAD_REQUEST, [], false);
+                return new JsonResponse(['error' => "ERROR 404 - Product not found"], Response::HTTP_BAD_REQUEST, [], false);
             }
             catch (Exception $exception){
                 return new JsonResponse(['error' => 'ERROR 400 - Modify/Delete product failed'], Response::HTTP_BAD_REQUEST, [], false);
@@ -129,7 +132,7 @@ class CatalogController extends AbstractController {
                 $session->set('shoppingCart', $shoppingCart);
                 return new JsonResponse(['success' => "CODE 200 - Product added to cart"], Response::HTTP_OK, [], false);
             }
-            return new JsonResponse(['error' => "ERROR 400 - Product doesn't exist"], Response::HTTP_BAD_REQUEST, [], false);
+            return new JsonResponse(['error' => "ERROR 404 - Product not found"], Response::HTTP_BAD_REQUEST, [], false);
         }
         return new JsonResponse(['error' => "CODE 401 - Unauthorized"], Response::HTTP_UNAUTHORIZED, [], false);
     }
@@ -146,7 +149,7 @@ class CatalogController extends AbstractController {
                     return new JsonResponse(['success' => "CODE 200 - Product removed from cart"], Response::HTTP_OK, [], false);
                 }
             }
-            return new JsonResponse(['error' => "ERROR 400 - Product doesn't exist"], Response::HTTP_BAD_REQUEST, [], false);
+            return new JsonResponse(['error' => "ERROR 404 - Product not found"], Response::HTTP_BAD_REQUEST, [], false);
         }
         return new JsonResponse(['error' => "CODE 401 - Unauthorized"], Response::HTTP_UNAUTHORIZED, [], false);
     }

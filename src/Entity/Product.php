@@ -107,7 +107,6 @@ class Product
             'description' => $this->getDescription(),
             'photo' => $this->getPhoto(),
             'price' => $this->getPrice(),
-            'quantity' => $this->getQuantity(),
         ];
         return new JsonResponse($data);
     }
