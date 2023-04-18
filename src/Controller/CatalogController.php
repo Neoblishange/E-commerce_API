@@ -41,7 +41,6 @@ class CatalogController extends AbstractController {
     {
         $allProducts = $this->productRepository->findAll();
         $response = [
-            'success' => 200,
             'found' => sizeof($allProducts),
         ];
         foreach ($allProducts as $product){
@@ -57,7 +56,7 @@ class CatalogController extends AbstractController {
         if($product) {
             return new JsonResponse($product instanceof Product ? $product->toJson()->getContent() : [], 200, [], true);
         }
-        return new JsonResponse(['error' => "ERROR 404 - Product not found"], Response::HTTP_BAD_REQUEST, [], false);
+        return new JsonResponse(['error' => "ERROR 404 - Product not found"], Response::HTTP_NOT_FOUND, [], false);
     }
 
     public function addProduct(Request $request): JsonResponse
@@ -104,7 +103,7 @@ class CatalogController extends AbstractController {
                         }
                     }
                 }
-                return new JsonResponse(['error' => "ERROR 404 - Product not found"], Response::HTTP_BAD_REQUEST, [], false);
+                return new JsonResponse(['error' => "ERROR 404 - Product not found"], Response::HTTP_NOT_FOUND, [], false);
             }
             catch (Exception $exception){
                 return new JsonResponse(['error' => 'ERROR 400 - Modify/Delete product failed'], Response::HTTP_BAD_REQUEST, [], false);
@@ -132,7 +131,7 @@ class CatalogController extends AbstractController {
                 $session->set('shoppingCart', $shoppingCart);
                 return new JsonResponse(['success' => "CODE 200 - Product added to cart"], Response::HTTP_OK, [], false);
             }
-            return new JsonResponse(['error' => "ERROR 404 - Product not found"], Response::HTTP_BAD_REQUEST, [], false);
+            return new JsonResponse(['error' => "ERROR 404 - Product not found"], Response::HTTP_NOT_FOUND, [], false);
         }
         return new JsonResponse(['error' => "CODE 401 - Unauthorized"], Response::HTTP_UNAUTHORIZED, [], false);
     }
@@ -149,7 +148,7 @@ class CatalogController extends AbstractController {
                     return new JsonResponse(['success' => "CODE 200 - Product removed from cart"], Response::HTTP_OK, [], false);
                 }
             }
-            return new JsonResponse(['error' => "ERROR 404 - Product not found"], Response::HTTP_BAD_REQUEST, [], false);
+            return new JsonResponse(['error' => "ERROR 404 - Product not found"], Response::HTTP_NOT_FOUND, [], false);
         }
         return new JsonResponse(['error' => "CODE 401 - Unauthorized"], Response::HTTP_UNAUTHORIZED, [], false);
     }
@@ -160,7 +159,6 @@ class CatalogController extends AbstractController {
         if($this->authController->authenticate($request)) {
             $shoppingCart = $session->has('shoppingCart') ? $session->get('shoppingCart') : [];
             $response = [
-                'success' => 200,
                 'found' => sizeof($shoppingCart),
                 'products' => $shoppingCart
             ];

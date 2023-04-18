@@ -32,7 +32,6 @@ class OrdersController extends AbstractController {
         if($this->authController->authenticate($request)) {
             $allOrders = $this->orderRepository->findAll();
             $response = [
-                'success' => 200,
                 'found' => sizeof($allOrders),
             ];
             foreach ($allOrders as $order) {
@@ -52,7 +51,7 @@ class OrdersController extends AbstractController {
             if($order){
                 return new JsonResponse($order instanceof Order ? $order->toJson()->getContent() : [], 200, [], true);
             }
-            return new JsonResponse(['error' => "ERROR 404 - Order not found"], Response::HTTP_BAD_REQUEST, [], false);
+            return new JsonResponse(['error' => "ERROR 404 - Order not found"], Response::HTTP_NOT_FOUND, [], false);
         }
         return new JsonResponse(['error' => "CODE 401 - Unauthorized"], Response::HTTP_UNAUTHORIZED, [], false);
     }
