@@ -6,6 +6,7 @@ add items to their cart, and place orders.
 To use this API, you will need:
 
 - PHP 8.1.10 or later
+- Symfony 5.5.2
 - Composer
 - MariaDB 10.5.8 or later
 - A web server (e.g. Apache, Nginx)
