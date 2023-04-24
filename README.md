@@ -23,12 +23,18 @@ composer install
 symfony console doctrine:database:create
 ```
 3. Copy `.env` file and update the database connection information.
-4. Run migrate command using Symfony Doctrine
-to create the database schema :
+4. Run the following commands using Symfony Doctrine
+to create the database :
 ```shell
+symfony console doctrine:database:create
+symfony console make:migration
 symfony console doctrine:migrations:migrate
 ```
-5. Start the web server and navigate to the project in your web browser :
+5. Once you created the database, run this SQL command :
+```sql
+ALTER TABLE e_commerce.order_product ADD COLUMN quantity INT
+```
+6. Start the web server and navigate to the project in your web browser :
 ```shell
 symfony server:start
 ```
