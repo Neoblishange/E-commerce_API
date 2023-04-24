@@ -88,7 +88,7 @@ class CatalogController extends AbstractController {
                 if($product){
                     $user = $this->userRepository->findOneBy(['id' => $this->authController->getApiToken($request)->getUserId()]);
                     if($user === $product->getUser()){
-                        if($request->getMethod() == Request::METHOD_POST) {
+                        if($request->getMethod() == Request::METHOD_PUT) {
                             $data = json_decode($request->getContent(), true);
                             $product->setName($data["name"]);
                             $product->setDescription($data["description"]);
