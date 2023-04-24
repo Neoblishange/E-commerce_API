@@ -119,10 +119,11 @@ class CatalogController extends AbstractController {
             if($this->productRepository->findOneBy(['id' => $productId])){
                 $shoppingCart = $session->has('shoppingCart') ? $session->get('shoppingCart') : [];
                 if(sizeof($shoppingCart) > 0) {
-                    foreach ($shoppingCart as $productInOrder) {
-                        $productInOrder['id'] === $productId
-                            ? $shoppingCart[$productId]['quantity'] = $productInOrder['quantity'] + 1
-                            : $shoppingCart[$productId] = ['id' => $productId, 'quantity' => 1];
+                    if(array_key_exists($productId, $shoppingCart)) {
+                        $shoppingCart[$productId]['quantity'] = $shoppingCart[$productId]['quantity'] + 1;
+                    }
+                    else {
+                        $shoppingCart[$productId] = ['id' => $productId, 'quantity' => 1];
                     }
                 }
                 else {
